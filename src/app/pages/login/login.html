@@ -19,20 +19,22 @@
           <!-- Body Section -->
           <div class="card-body p-4">
             <form>
-              <!-- Email Input -->
+              <!-- Username Input -->
               <div class="mb-3 input-group-animated">
-                <label for="email" class="form-label fw-semibold text-dark">Email Address</label>
+                <label for="username" class="form-label fw-semibold text-dark">Username or Email</label>
                 <div class="input-wrapper">
                   <span class="input-icon">
                     <i class="fas fa-envelope"></i>
                   </span>
                   <input 
-                    type="email" 
+                    type="text" 
                     class="form-control form-control-lg input-field" 
-                    id="email" 
-                    placeholder="Enter your email" 
+                     
+                    [(ngModel)]="loginobj.username"
+                    name="username"
+                    placeholder="Enter your Username or Email" 
                     required>
-                  <div class="error-message">Please provide a valid email address</div>
+                  <div class="error-message">Please provide a valid username or email address</div>
                 </div>
               </div>
 
@@ -46,7 +48,9 @@
                   <input 
                     type="password" 
                     class="form-control form-control-lg input-field" 
-                    id="password" 
+                   
+                    [(ngModel)]="loginobj.Password" 
+                    name="password"
                     placeholder="Enter your password" 
                     required>
                   <div class="error-message">Password is required</div>
@@ -76,8 +80,9 @@
 
               <!-- Login Button -->
               <button 
-                type="submit" 
-                class="btn btn-primary btn-lg w-100 fw-semibold mb-3">
+                type="button" 
+                class="btn btn-primary btn-lg w-100 fw-semibold mb-3"
+                (click)="login()">
                 Sign In
               </button>
 
