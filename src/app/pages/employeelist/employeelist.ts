@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Component, inject, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Master } from '../../Services/master';
@@ -133,3 +134,14 @@ export class Employeelist implements OnInit {
     }
   }
 }
+=======
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-employeelist',
+  imports: [],
+  templateUrl: './employeelist.html',
+  styleUrl: './employeelist.css',
+})
+export class Employeelist {}
+>>>>>>> c3e3efb7eac1a9bd416c55197f2aeb30a9f3fa31

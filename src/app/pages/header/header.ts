@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -25,3 +26,14 @@ export class Header {
     this.router.navigateByUrl('login');
   }
 }
+=======
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-header',
+  imports: [],
+  templateUrl: './header.html',
+  styleUrl: './header.css',
+})
+export class Header {}
+>>>>>>> c3e3efb7eac1a9bd416c55197f2aeb30a9f3fa31
