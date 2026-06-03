@@ -1,0 +1,434 @@
+
+<!-- Sidebar + Main Layout Container -->
+<div class="layout-wrapper" [ngClass]="{'sidebar-open': sidebarOpen}">
+  <!-- Bootstrap 5 CSS + Icons + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6f9;
+      overflow-x: hidden;
+    }
+
+    /* ========= SIDEBAR STYLES (Angular state toggle) ========= */
+    .sidebar-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      z-index: 1030;
+    }
+
+    /* The actual sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 260px;
+      background: linear-gradient(145deg, #0f2b3d 0%, #1a3a4f 100%);
+      backdrop-filter: blur(2px);
+      box-shadow: 8px 0 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1), width 0.3s ease, margin-left 0.3s ease;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transform: translateX(-100%);
+    }
+
+    /* When sidebar is open - show it */
+    .layout-wrapper.sidebar-open .sidebar {
+      transform: translateX(0);
+    }
+
+    /* Main content shift using margin-left */
+    .main-content {
+      margin-left: 0;
+      transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      padding: 20px 28px;
+      min-height: 100vh;
+    }
+
+    /* When sidebar is open, shift content */
+    .layout-wrapper.sidebar-open .main-content {
+      margin-left: 260px;
+    }
+
+    /* Sidebar backdrop for mobile */
+    .sidebar-backdrop {
+      display: none;
+    }
+    .sidebar-backdrop.show {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1025;
+    }
+
+    /* Custom scroll */
+    .sidebar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: #2c4c62;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #ff9f4a;
+      border-radius: 10px;
+    }
+
+    /* Brand / Logo area */
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      padding: 1.5rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 1rem;
+      white-space: nowrap;
+    }
+    .brand-icon {
+      font-size: 2rem;
+      color: #ffb347;
+      margin-right: 12px;
+      transition: all 0.2s;
+      min-width: 32px;
+    }
+    .brand-name {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff, #ffe0b5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      transition: opacity 0.2s ease, visibility 0.2s;
+    }
+
+    /* Collapsed state: hide brand name on mobile when sidebar open */
+    @media (max-width: 768px) {
+      .layout-wrapper.sidebar-open .sidebar .brand-name {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    /* navigation items */
+    .nav-link-custom {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      margin: 6px 12px;
+      border-radius: 16px;
+      color: #e2e8f0;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .nav-link-custom i {
+      font-size: 1.3rem;
+      min-width: 32px;
+      text-align: center;
+      margin-right: 12px;
+      transition: margin 0.2s;
+    }
+    .nav-link-custom span {
+      transition: opacity 0.2s ease, width 0.2s;
+    }
+
+    .nav-link-custom:hover {
+      background: rgba(255, 180, 71, 0.2);
+      color: #ffcd7e;
+      transform: translateX(4px);
+    }
+    .nav-link-custom.active {
+      background: linear-gradient(95deg, #ff9f4a20, #ffb34730);
+      color: #ffda9e;
+      border-left: 3px solid #ffb347;
+    }
+
+    /* Toggle button (label) style */
+    .toggle-btn {
+      background: #f0f2f5;
+      border: none;
+      font-size: 1.5rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 30px;
+      color: #1e3a4d;
+      transition: 0.2s;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toggle-btn:hover {
+      background: #e2e8f0;
+      transform: scale(0.96);
+    }
+
+    /* Top navbar */
+    .top-navbar {
+      background: white;
+      border-radius: 28px;
+      padding: 12px 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .avatar {
+      width: 48px;
+      height: 48px;
+      background: #ffb347;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.3rem;
+      color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .greeting {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    /* Cards & animations */
+    .card-dash {
+      border: none;
+      border-radius: 28px;
+      background: white;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,0,0,0.05);
+      animation: fadeSlideUp 0.4s ease backwards;
+    }
+    .card-dash:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 30px -12px rgba(0,0,0,0.12);
+    }
+    .stat-icon {
+      width: 54px;
+      height: 54px;
+      background: #fff2e5;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #ff9f4a;
+    }
+    @keyframes fadeSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive: on smaller screens sidebar becomes overlay */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      /* When sidebar open on mobile, show it as overlay */
+      .layout-wrapper.sidebar-open .sidebar {
+        transform: translateX(0);
+        width: 260px;
+      }
+      
+      /* On mobile, main content margin always 0 */
+      .main-content {
+        margin-left: 0 !important;
+      }
+      
+      /* On mobile, when sidebar is open, show backdrop */
+      .sidebar-backdrop {
+        display: none;
+      }
+      
+      .layout-wrapper.sidebar-open .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1025;
+      }
+      
+      /* Adjust brand visibility when open on mobile */
+      .layout-wrapper.sidebar-open .sidebar .nav-link-custom span {
+        opacity: 1;
+        width: auto;
+      }
+      
+      .layout-wrapper.sidebar-open .sidebar .nav-link-custom {
+        justify-content: flex-start;
+        padding: 12px 20px;
+      }
+      
+      .layout-wrapper.sidebar-open .sidebar .nav-link-custom i {
+        margin-right: 12px;
+      }
+    }
+
+    /* Desktop - always show sidebar when open */
+    @media (min-width: 769px) {
+      .sidebar {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 260px;
+      }
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 2rem;
+      color: #6c757d;
+      font-size: 0.8rem;
+    }
+    hr {
+      background: rgba(255,255,255,0.1);
+      margin: 0 16px;
+    }
+  </style>
+
+<!-- Sidebar + Main Layout Container -->
+<div class="layout-wrapper" [ngClass]="{'sidebar-open': sidebarOpen}">
+  <!-- Sidebar container -->
+  <div class="sidebar-container">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fas fa-chart-line brand-icon"></i>
+        <span class="brand-name">InsightFlow</span>
+      </div>
+      <div class="sidebar-nav mt-2">
+        <a 
+          routerLink="/dashboard" 
+          routerLinkActive="active"
+          (click)="closeSidebar()"
+          class="nav-link-custom">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a 
+          routerLink="/employee-list" 
+          routerLinkActive="active"
+          (click)="closeSidebar()"
+          class="nav-link-custom">
+          <i class="fas fa-users"></i>
+          <span>Employees</span>
+        </a>
+        <a 
+          routerLink="/department" 
+          routerLinkActive="active"
+          (click)="closeSidebar()"
+          class="nav-link-custom">
+          <i class="fas fa-building"></i>
+          <span>Department</span>
+        </a>
+        <a 
+          routerLink="/desognation" 
+          routerLinkActive="active"
+          (click)="closeSidebar()"
+          class="nav-link-custom">
+          <i class="fas fa-briefcase"></i>
+          <span>Designation</span>
+        </a>
+        <a href="#" (click)="closeSidebar(); $event.preventDefault()" class="nav-link-custom">
+          <i class="fas fa-chart-pie"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="#" (click)="closeSidebar(); $event.preventDefault()" class="nav-link-custom">
+          <i class="fas fa-envelope"></i>
+          <span>Messages</span>
+        </a>
+        <a href="#" (click)="closeSidebar(); $event.preventDefault()" class="nav-link-custom">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+        <hr>
+        <a 
+          href="#" 
+          (click)="logout(); $event.preventDefault()"
+          class="nav-link-custom">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Backdrop for mobile -->
+    <div 
+      class="sidebar-backdrop" 
+      [ngClass]="{'show': sidebarOpen}"
+      (click)="closeSidebar()">
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" [ngClass]="{'sidebar-expanded': sidebarOpen}">
+    <!-- Top navbar with toggle button -->
+    <div class="top-navbar">
+      <div class="d-flex align-items-center gap-3">
+        <!-- Toggle button -->
+        <button 
+          class="toggle-btn" 
+          (click)="toggleSidebar()"
+          [attr.aria-label]="sidebarOpen ? 'Close sidebar' : 'Open sidebar'">
+          <i [ngClass]="sidebarOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+        </button>
+        <div class="d-none d-md-block">
+          <h5 class="mb-0 fw-semibold" style="color: #1f3a48;">Welcome back</h5>
+          <small class="text-muted">Here's what's happening today</small>
+        </div>
+      </div>
+      <div class="user-profile">
+        <div class="d-none d-sm-block text-end">
+          <div class="greeting">Employee Portal</div>
+          <small class="text-secondary">Admin</small>
+        </div>
+        <div class="avatar">
+          <i class="fas fa-user-astronaut"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page content (router outlet) -->
+    <router-outlet></router-outlet>
+
+    <div class="footer-note">
+      <i class="far fa-copyright"></i> 2026 Employee Management System
+    </div>
+  </div>
+</div>

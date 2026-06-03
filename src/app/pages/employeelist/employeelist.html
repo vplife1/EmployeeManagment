@@ -1,0 +1,209 @@
+<!-- Employee List (HTML-only template with Bootstrap + CSS animations) -->
+<style>
+  .fade-slide { animation: fadeSlideUp 0.36s ease both; }
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity:1; transform: translateY(0);} }
+
+  /* CSS-only modal/panel for Add Employee */
+  #addToggle { display: none; }
+  .add-panel {
+    max-height: 0; overflow: hidden; transition: max-height 0.36s ease; box-shadow: 0 10px 30px rgba(10,10,10,0.06);
+  }
+  #addToggle:checked ~ .add-panel { max-height: 800px; padding: 18px; }
+
+  .employee-card { border-radius: 12px; transition: transform .18s; }
+  .employee-card:hover { transform: translateY(-6px); }
+
+  .small-muted { font-size: 0.9rem; color: #6c757d; }
+
+  .actions .btn { margin-right: 6px; }
+
+  /* Toast Notification Styles */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .toast-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+  }
+
+  .toast-error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+  }
+
+  .toast-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+  }
+</style>
+
+<!-- Toast Notification -->
+<div *ngIf="toast()" class="toast-container" [ngClass]="'toast-' + toast()!.type">
+  <div class="alert alert-dismissible fade show d-flex align-items-center gap-3 mb-0" role="alert" [ngClass]="'alert-' + (toast()!.type === 'success' ? 'success' : toast()!.type === 'error' ? 'danger' : 'info')" style="background: transparent; border: none;">
+    <div style="font-size: 1.2rem;">
+      <i *ngIf="toast()!.type === 'success'" class="fas fa-check-circle"></i>
+      <i *ngIf="toast()!.type === 'error'" class="fas fa-exclamation-circle"></i>
+      <i *ngIf="toast()!.type === 'info'" class="fas fa-info-circle"></i>
+    </div>
+    <span>{{ toast()?.message }}</span>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h3 class="mb-0">Employees</h3>
+      <div class="small-muted">List of employees and quick actions</div>
+    </div>
+    <!-- Add toggle (CSS-only) -->
+    <div class="d-flex align-items-center gap-2">
+      <label for="addToggle" class="btn btn-outline-primary">+ Add Employee</label>
+    </div>
+  </div>
+
+  <!-- Add employee panel (CSS-only open/close) -->
+  <input id="addToggle" type="checkbox">
+  <div class="add-panel bg-white rounded-3 mb-4">
+    <!-- Plain HTML add form. Replace names/ids with your Angular bindings or API hooks. -->
+    <form class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">First Name</label>
+        <input class="form-control" [(ngModel)]="newEmployee.firstName" name="firstName" id="firstName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Last Name</label>
+        <input class="form-control" [(ngModel)]="newEmployee.lastName" name="lastName" id="lastName">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Address</label>
+        <input class="form-control" [(ngModel)]="newEmployee.address" name="address" id="address">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" [(ngModel)]="newEmployee.email" name="email" id="email">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Phone</label>
+        <input class="form-control" [(ngModel)]="newEmployee.phone" name="phone" id="phone">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Username</label>
+        <input class="form-control" [(ngModel)]="newEmployee.userName" name="userName" id="userName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Role</label>
+        <input class="form-control" [(ngModel)]="newEmployee.role" name="role" id="role">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Password</label>
+        <input class="form-control" type="password" [(ngModel)]="newEmployee.password" name="password" id="password">
+      </div>
+      <div class="col-12 d-flex gap-2 justify-content-end">
+        <label for="addToggle" class="btn btn-secondary">Cancel</label>
+        <button type="button" class="btn btn-primary" (click)="addEmployee()">Save Employee</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Employee list table -->
+  <div class="card p-3 mb-4 employee-card fade-slide bg-white">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of employees(); let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <div class="fw-semibold">{{ emp.firstName || '—' }} {{ emp.lastName || '' }}</div>
+            </td>
+            <td>{{ emp.email || '—' }}</td>
+            <td>{{ emp.phone || '—' }}</td>
+            <td class="text-truncate" style="max-width:220px">{{ emp.address || '—' }}</td>
+            <td>{{ emp.userName || '—' }}</td>
+            <td>{{ emp.role || '—' }}</td>
+            <td class="text-end actions">
+              <button class="btn btn-sm btn-outline-primary" type="button" (click)="editEmployee(emp)">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteCustomer(emp.id)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && employees().length === 0">
+            <td colspan="8" class="text-center small-muted">No employees available.</td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="8" class="text-center small-muted">Loading employees...</td>
+          </tr>
+          <tr *ngIf="errorMessage && !loading">
+            <td colspan="8" class="text-center text-danger">{{ errorMessage }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Edit panel (static HTML). Replace with your dynamic edit form or Angular bindings. -->
+  <div class="card p-3 fade-slide bg-white employee-card">
+    <h5 class="mb-3">Edit Employee</h5>
+    <form class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">First Name</label>
+        <input class="form-control" id="editFirstName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Last Name</label>
+        <input class="form-control" id="editLastName">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Address</label>
+        <input class="form-control" id="editAddress">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" id="editEmail">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Phone</label>
+        <input class="form-control" id="editPhone">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Username</label>
+        <input class="form-control" id="editUserName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Role</label>
+        <input class="form-control" id="editRole">
+      </div>
+      <div class="col-12 d-flex gap-2 justify-content-end">
+        <button type="button" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-success">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+<p>employeelist works!</p>
